@@ -3,8 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "axios": "^0.16.1",
+    "lodash.debounce": "^4.0.8",
     "react": "^15.5.4",
-    "react-dom": "^15.5.4"
+    "react-dom": "^15.5.4",
+    "styled-components": "^1.4.6",
+    "whatwg-fetch": "^2.0.3"
   },
   "devDependencies": {
     "react-scripts": "1.0.5"
