@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import styled, { ThemeProvider } from 'styled-components';
-import logo from './logo.svg';
 import theme from './theme';
 import Form from './components/Form';
 import './App.css';

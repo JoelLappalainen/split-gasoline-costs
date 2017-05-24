@@ -1,16 +1,6 @@
 import React, { Component } from "react";
 import styled from "styled-components";
-import axios from "axios";
 import debounce from "lodash.debounce";
-
-import { GOOGLE_API_KEY, GOOGLE_API_URL } from "../../constants";
-
-const fetchOptions = {
-  headers: {
-    "X-Requested-With": "XMLHttpRequest",
-    "Acces-Control-Allow-Origin": "*"
-  }
-};
 
 // Sanitize number string so that parseFloat works properly
 const sanitize = num => num.replace(',', '.');
