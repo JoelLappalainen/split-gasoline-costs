@@ -12,21 +12,34 @@ const fetchOptions = {
   }
 };
 
+// Sanitize number string so that parseFloat works properly
+const sanitize = num => num.replace(',', '.');
+
 class Form extends Component {
-  state = {
-    passengerCount: 2,
-    searchResults: [],
-    showFrom: false,
-    showTo: false,
-    chosenFromValue: "",
-    chosenToValue: "",
-    chosenFrom: null,
-    chosenTo: null,
-    distance: null,
-    gasolinePrice: "",
-    totalPrice: null,
-    consumption: ""
-  };
+  constructor(props) {
+    super(props);
+
+    // Add these to `this` instead of state since we dont want to re-create them
+    // every time the state changes
+    this.gApi = props.google;
+    this.gDistance = new props.google.maps.DistanceMatrixService();
+    this.gAutocomplete = new props.google.maps.places.AutocompleteService();
+
+    this.state = {
+      passengerCount: 2,
+      searchResults: [],
+      showFrom: false,
+      showTo: false,
+      chosenFromValue: "",
+      chosenToValue: "",
+      chosenFrom: null,
+      chosenTo: null,
+      distance: null,
+      gasolinePrice: "",
+      totalPrice: null,
+      consumption: ""
+    };
+  }
 
   addPassenger = () => {
     this.setState(prevState => ({
@@ -61,20 +74,25 @@ class Form extends Component {
     });
   };
 
+  updateDistance = ({ rows = [] }) => {
+    if (rows.length) {
+      this.setState({ distance: rows[0].elements[0].distance });
+    }
+  }
+
   calculateDistance = (from, to) => {
     const { chosenFrom, chosenTo } = this.state;
+
     if (chosenFrom && chosenTo) {
       const idFrom = chosenFrom.place_id;
       const idTo = chosenTo.place_id;
-      axios
-        .get(
-          `${GOOGLE_API_URL}distancematrix/json?origins=place_id:${idFrom}&destinations=place_id:${idTo}&key=${GOOGLE_API_KEY}`
-        )
-        .then(({ data: { rows } }) => {
-          if (rows.length) {
-            this.setState({ distance: rows[0].elements[0].distance });
-          }
-        });
+
+      // Request distance from api
+      this.gDistance.getDistanceMatrix({
+        origins: [{ placeId: idFrom }],
+        destinations: [{ placeId: idTo }],
+        travelMode: 'DRIVING',
+      }, this.updateDistance); // <-- this is the callback
     } else {
       console.log("error");
     }
@@ -88,24 +106,28 @@ class Form extends Component {
 
   calculateTotalPrice = () => {
     const { distance, gasolinePrice, consumption } = this.state;
-    const res =
-      distance.value /
-      100000 *
-      parseFloat(consumption) *
-      parseFloat(gasolinePrice);
-    this.setState({ totalPrice: res });
+    const consumptionNum = parseFloat(consumption);
+    const gasPriceNum = parseFloat(gasolinePrice);
+    const totalPrice = (distance.value / 100000) * consumptionNum * gasPriceNum;
+    this.setState({ totalPrice });
   };
 
+  updateSearchResults = predictions => {
+    if (predictions) {
+      this.setState({ searchResults: predictions });
+    }
+  }
+
   searchPlacesDebounced = debounce(word => {
-    axios
-      .get(
-        `${GOOGLE_API_URL}place/autocomplete/json?input=${word}&types=geocode&language=fi&key=${GOOGLE_API_KEY}`
-      )
-      .then(({ data }) => this.setState({ searchResults: data.predictions }));
+    // Get address predictions from api
+    this.gAutocomplete.getPlacePredictions({
+      input: word,
+      types: ['geocode'],
+      componentRestrictions: { country: 'fi' },
+    }, this.updateSearchResults); // <-- this is the callback
   }, 400);
 
   render() {
-    console.log(this.state);
     const {
       passengerCount,
       searchResults,
@@ -118,6 +140,8 @@ class Form extends Component {
       totalPrice,
       consumption
     } = this.state;
+
+    console.log('state', this.state);
 
     return (
       <FormWrapper>
@@ -135,7 +159,7 @@ class Form extends Component {
           {showFrom &&
             <Autocomplete>
               {searchResults.map(item => (
-                <Item onClick={() => this.addFrom(item)}>
+                <Item onClick={() => this.addFrom(item)} key={item.place_id}>
                   {item.description}
                 </Item>
               ))}
@@ -155,7 +179,7 @@ class Form extends Component {
           {showTo &&
             <Autocomplete>
               {searchResults.map(item => (
-                <Item onClick={() => this.addTo(item)}>
+                <Item onClick={() => this.addTo(item)} key={item.place_id}>
                   {item.description}
                 </Item>
               ))}
@@ -168,20 +192,22 @@ class Form extends Component {
             <Input
               w="100%"
               type="number"
+              placeholder="€/l"
               value={gasolinePrice}
               onChange={({ target }) =>
-                this.setState({ gasolinePrice: target.value })}
+                this.setState({ gasolinePrice: sanitize(target.value) })}
             />
           </Label>
           <div style={{ paddingRight: 24 }} />
           <Label w="100%">
-            Kulutus? (l/100km)
+            Kulutus?
             <Input
               w="100%"
               type="number"
               value={consumption}
+              placeholder="l/100km"
               onChange={({ target }) =>
-                this.setState({ consumption: target.value })}
+                this.setState({ consumption: sanitize(target.value) })}
             />
           </Label>
         </TravelInfo>
@@ -206,7 +232,7 @@ class Form extends Component {
         </PassengerCountControl>
 
         <CalculateButton type="button" onClick={this.calculateTotalPrice}>
-          SPLIT!
+          SPLITTAA!
         </CalculateButton>
 
         {totalPrice !== null &&
@@ -257,11 +283,6 @@ const PassengerCountControl = styled.div`
   margin-bottom: 24px; 
 `;
 
-const SplittedPrice = styled.div`
-  margin-top: 16px;
-  font-size: 32px;
-`;
-
 const IconButton = styled.i`
   font-size: 56px;
   color: ${props => props.theme.mainColor};
@@ -284,13 +305,15 @@ const Distance = styled.div`
 
 const CalculateButton = styled.button`
   font-family: ${props => props.theme.mainFontFamily};
-  font-size: 32px;
+  font-size: 28px;
   border-radius: 3px;
   background-color: ${props => props.theme.mainColor};
   color: white;
   border: none;
   padding: 12px 16px;
   text-align: center;
+  font-weight: 700;
+  letter-spacing: 1.6px;
 `;
 
 const Autocomplete = styled.ul`
@@ -312,6 +335,12 @@ const Autocomplete = styled.ul`
 const Item = styled.li`
   padding: 8px;
   border-bottom: 1px solid #eee;
+`;
+
+const SplittedPrice = styled.div`
+  margin-top: 16px;
+  font-size: 24px;
+  font-weight: 700;
 `;
 
 export default Form;

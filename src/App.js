@@ -6,14 +6,42 @@ import Form from './components/Form';
 import './App.css';
 
 class App extends Component {
+  state = {
+    initDone: false,
+  }
+
+  componentWillMount() {
+    if (!window.google) {
+      this.googleApiLoader = setInterval(
+        () => this.checkIfGoogleApiExists(),
+        500
+      );
+    } else {
+      this.setState({ initDone: true });
+    }
+  }
+
+  checkIfGoogleApiExists = () => {
+    if (window.google) {
+      this.setState({ initDone: true });
+      clearInterval(this.googleApiLoader);
+    }
+  }
+
   render() {
+    const { initDone } = this.state;
+
     return (
       <ThemeProvider theme={theme}>
         <div className="App">
           <Header>
-            <AppIcon className="ion-model-s"/>
+            <AppIcon className="ion-model-s" />
           </Header>
-          <Form/>
+
+          {initDone
+            ? <Form google={window.google} />
+            : <div>Ladataan...</div>
+          }
         </div>
       </ThemeProvider>
     );
@@ -27,6 +55,7 @@ const Header = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-bottom: 16px;
 `;
 
 const AppIcon = styled.i`
