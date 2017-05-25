@@ -3,7 +3,7 @@ import styled from "styled-components";
 import debounce from "lodash.debounce";
 
 // Sanitize number string so that parseFloat works properly
-const sanitize = num => num.replace(',', '.');
+const sanitize = num => num.replace(",", ".");
 
 class Form extends Component {
   constructor(props) {
@@ -68,7 +68,7 @@ class Form extends Component {
     if (rows.length) {
       this.setState({ distance: rows[0].elements[0].distance });
     }
-  }
+  };
 
   calculateDistance = (from, to) => {
     const { chosenFrom, chosenTo } = this.state;
@@ -78,11 +78,14 @@ class Form extends Component {
       const idTo = chosenTo.place_id;
 
       // Request distance from api
-      this.gDistance.getDistanceMatrix({
-        origins: [{ placeId: idFrom }],
-        destinations: [{ placeId: idTo }],
-        travelMode: 'DRIVING',
-      }, this.updateDistance); // <-- this is the callback
+      this.gDistance.getDistanceMatrix(
+        {
+          origins: [{ placeId: idFrom }],
+          destinations: [{ placeId: idTo }],
+          travelMode: "DRIVING"
+        },
+        this.updateDistance
+      ); // <-- this is the callback
     } else {
       console.log("error");
     }
@@ -98,7 +101,7 @@ class Form extends Component {
     const { distance, gasolinePrice, consumption } = this.state;
     const consumptionNum = parseFloat(consumption);
     const gasPriceNum = parseFloat(gasolinePrice);
-    const totalPrice = (distance.value / 100000) * consumptionNum * gasPriceNum;
+    const totalPrice = distance.value / 100000 * consumptionNum * gasPriceNum;
     this.setState({ totalPrice });
   };
 
@@ -106,15 +109,18 @@ class Form extends Component {
     if (predictions) {
       this.setState({ searchResults: predictions });
     }
-  }
+  };
 
   searchPlacesDebounced = debounce(word => {
     // Get address predictions from api
-    this.gAutocomplete.getPlacePredictions({
-      input: word,
-      types: ['geocode'],
-      componentRestrictions: { country: 'fi' },
-    }, this.updateSearchResults); // <-- this is the callback
+    this.gAutocomplete.getPlacePredictions(
+      {
+        input: word,
+        types: ["geocode"],
+        componentRestrictions: { country: "fi" }
+      },
+      this.updateSearchResults
+    ); // <-- this is the callback
   }, 400);
 
   render() {
@@ -131,7 +137,7 @@ class Form extends Component {
       consumption
     } = this.state;
 
-    console.log('state', this.state);
+    console.log("state", this.state);
 
     return (
       <FormWrapper>
@@ -149,7 +155,13 @@ class Form extends Component {
           {showFrom &&
             <Autocomplete>
               {searchResults.map(item => (
-                <Item onClick={() => this.addFrom(item)} key={item.place_id}>
+                <Item
+                  onClick={() => {
+                    this.addFrom(item);
+                    this.setState({ searchResults: [] });
+                  }}
+                  key={item.place_id}
+                >
                   {item.description}
                 </Item>
               ))}
@@ -169,7 +181,13 @@ class Form extends Component {
           {showTo &&
             <Autocomplete>
               {searchResults.map(item => (
-                <Item onClick={() => this.addTo(item)} key={item.place_id}>
+                <Item
+                  onClick={() => {
+                    this.addTo(item);
+                    this.setState({ searchResults: [] });
+                  }}
+                  key={item.place_id}
+                >
                   {item.description}
                 </Item>
               ))}
