@@ -1,13 +1,13 @@
-import React, { Component } from 'react';
-import styled, { ThemeProvider } from 'styled-components';
-import theme from './theme';
-import Form from './components/Form';
-import './App.css';
+import React, { Component } from "react";
+import styled, { ThemeProvider } from "styled-components";
+import theme from "./theme";
+import Form from "./components/Form";
+import "./App.css";
 
 class App extends Component {
   state = {
-    initDone: false,
-  }
+    initDone: false
+  };
 
   componentWillMount() {
     if (!window.google) {
@@ -25,7 +25,7 @@ class App extends Component {
       this.setState({ initDone: true });
       clearInterval(this.googleApiLoader);
     }
-  }
+  };
 
   render() {
     const { initDone } = this.state;
@@ -37,10 +37,7 @@ class App extends Component {
             <AppIcon className="ion-model-s" />
           </Header>
 
-          {initDone
-            ? <Form google={window.google} />
-            : <div>Ladataan...</div>
-          }
+          {initDone ? <Form google={window.google} /> : <div>Ladataan...</div>}
         </div>
       </ThemeProvider>
     );
