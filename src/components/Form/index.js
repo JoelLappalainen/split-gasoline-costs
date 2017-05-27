@@ -84,8 +84,8 @@ class Form extends Component {
           destinations: [{ placeId: idTo }],
           travelMode: "DRIVING"
         },
-        this.updateDistance
-      ); // <-- this is the callback
+        this.updateDistance // <-- this is the callback
+      );
     } else {
       console.log("error");
     }
@@ -119,8 +119,8 @@ class Form extends Component {
         types: ["geocode"],
         componentRestrictions: { country: "fi" }
       },
-      this.updateSearchResults
-    ); // <-- this is the callback
+      this.updateSearchResults // <-- this is the callback
+    );
   }, 400);
 
   render() {
@@ -276,6 +276,11 @@ const Input = styled.input`
   padding: 16px;
   color: ${props => props.theme.mainColor};
   ${props => props.w && `width: ${props.w}`};
+
+  &:focus {
+    outline: none;
+    box-shadow: inset 0px 0px 4px ${props => props.theme.mainColor};
+  }
 `;
 
 const TravelInfo = styled.div`
@@ -322,6 +327,10 @@ const CalculateButton = styled.button`
   text-align: center;
   font-weight: 700;
   letter-spacing: 1.6px;
+
+  &:active {
+    background-color: ${props => props.theme.mainColorDarker};
+  }
 `;
 
 const Autocomplete = styled.ul`

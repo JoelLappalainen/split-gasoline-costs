@@ -1,0 +1,37 @@
+.splashEnter {
+  opacity: 0.01;
+  transition: opacity 0.8s cubic-bezier(.03, .83, .76, .98);
+}
+
+.splashEnter.splashEnterActive {
+  opacity: 1;
+}
+
+.splashLeave {
+  opacity: 1;
+}
+
+.splashLeave .right, .splashLeave .left {
+  transform: translateX(0px);
+  transition: opacity 0.8s cubic-bezier(.03, .83, .76, .98), transform 0.8s cubic-bezier(.03, .83, .76, .98);
+  will-change: opacity, transform;
+}
+
+.splashLeave h1 {
+  opacity: 1;
+  transition: opacity 0.4s ease, transform 0.4s cubic-bezier(.03, .83, .76, .98);
+  will-change: opacity, transform;
+}
+
+.splashLeave.splashLeaveActive .right {
+  transform: translateX(110%);
+}
+
+.splashLeave.splashLeaveActive .left {
+  transform: translateX(-110%);
+}
+
+.splashLeave.splashLeaveActive h1 {
+  opacity: 0;
+  transform: scale(0);
+}
