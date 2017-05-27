@@ -1,3 +1,33 @@
+/* This is applied when the leave-animation starts  --------------------- */
+.splashLeave .right, .splashLeave .left {
+  transform: translateX(0px);
+  /* NOTE: the animation duration here should match to the one given to `CSSTransitionGroup` */
+  transition: opacity 1s cubic-bezier(.03, .83, .76, .98), transform 1s cubic-bezier(.03, .83, .76, .98);
+  will-change: opacity, transform;
+}
+
+.splashLeave h1 {
+  opacity: 1;
+  /* The duration for the heading is deliberately shorter than others to spice up the animation */
+  transition: opacity 0.4s ease, transform 0.4s cubic-bezier(.03, .83, .76, .98);
+  will-change: opacity, transform;
+}
+
+/* And these when the leave-animation is active / ongoing  --------------- */
+.splashLeave.splashLeaveActive .right {
+  transform: translateX(110%); /* 110% is relative to the size of the element itself */
+}
+
+.splashLeave.splashLeaveActive .left {
+  transform: translateX(-110%); /* 110% is relative to the size of the element itself */
+}
+
+.splashLeave.splashLeaveActive h1 {
+  opacity: 0;
+  transform: scale(0);
+}
+
+/* These are probably unnecessary for us ------------------------------ */
 .splashEnter {
   opacity: 0.01;
   transition: opacity 0.8s cubic-bezier(.03, .83, .76, .98);
@@ -10,28 +40,4 @@
 .splashLeave {
   opacity: 1;
 }
-
-.splashLeave .right, .splashLeave .left {
-  transform: translateX(0px);
-  transition: opacity 0.8s cubic-bezier(.03, .83, .76, .98), transform 0.8s cubic-bezier(.03, .83, .76, .98);
-  will-change: opacity, transform;
-}
-
-.splashLeave h1 {
-  opacity: 1;
-  transition: opacity 0.4s ease, transform 0.4s cubic-bezier(.03, .83, .76, .98);
-  will-change: opacity, transform;
-}
-
-.splashLeave.splashLeaveActive .right {
-  transform: translateX(110%);
-}
-
-.splashLeave.splashLeaveActive .left {
-  transform: translateX(-110%);
-}
-
-.splashLeave.splashLeaveActive h1 {
-  opacity: 0;
-  transform: scale(0);
-}
+/* --------------------------------------------------------------------- */

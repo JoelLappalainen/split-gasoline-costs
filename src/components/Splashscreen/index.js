@@ -1,13 +1,14 @@
 import React from "react";
 import styled from "styled-components";
 import CSSTransitionGroup from "react-transition-group/CSSTransitionGroup";
+
 import "./index.css";
 
 const Splashscreen = ({ visible }) => (
   <CSSTransitionGroup
     component="div"
-    transitionLeaveTimeout={800}
-    transitionEnterTimeout={800}
+    transitionLeaveTimeout={1000}
+    transitionEnterTimeout={1000}
     transitionName={{
       enter: "splashEnter",
       enterActive: "splashEnterActive",
@@ -15,6 +16,11 @@ const Splashscreen = ({ visible }) => (
       leaveActive: "splashLeaveActive"
     }}
   >
+    {/* NOTE: `CSSTransitionGroup` works so that when the component
+      * inside it (children) gets unmounted it applies certain css classnames
+      * to it before actually removing it from DOM.
+      * => This way it's quite simple to animate hide / show type of things.
+      */}
     {visible &&
       <SplashscreenWrapper>
         <SplashSlogan>
@@ -33,16 +39,16 @@ const SplashscreenWrapper = styled.div`
   left: 0;
   bottom: 0;
   background-color: transparent;
-  z-index: 9997;
+  z-index: ${props => props.theme.elevations.splash};
 `;
 
 const Panel = styled.div`
   position: fixed;
   top: 0;
-  width: 51%;
   bottom: 0;
+  width: 51%;
   background-color: ${props => props.theme.mainColor};
-  z-index: 9998;
+  z-index: ${props => props.theme.elevations.splash + 1};
   ${props => props.r && "right: 0"};
   ${props => props.l && "left: 0"};
 `;
@@ -52,13 +58,13 @@ const SplashSlogan = styled.h1`
   top: 16px;
   width: 100%;
   text-align: center;
-  z-index: 9999;
   color: #fff;
   text-transform: uppercase;
   line-height: 1;
   font-weight: 700;
   letter-spacing: 3px;
   font-size: 56px;
+  z-index: ${props => props.theme.elevations.splash + 2};
 
   & > span {
     border-top: 2px solid #fff;

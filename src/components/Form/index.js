@@ -2,32 +2,35 @@ import React, { Component } from "react";
 import styled from "styled-components";
 import debounce from "lodash.debounce";
 
+// TODO: refactor this into more manageable pieces...
+
 // Sanitize number string so that parseFloat works properly
+// => decimal numbers have to use dot instead of comma
 const sanitize = num => num.replace(",", ".");
 
 class Form extends Component {
   constructor(props) {
     super(props);
 
-    // Add these to `this` instead of state since we dont want to re-create them
-    // every time the state changes
-    this.gApi = props.google;
+    // Add these to `this` instead of state since we dont want to
+    // re-create them every time the state changes
+    this.gApi = props.google; // TODO: This might not be needed
     this.gDistance = new props.google.maps.DistanceMatrixService();
     this.gAutocomplete = new props.google.maps.places.AutocompleteService();
 
     this.state = {
       passengerCount: 2,
       searchResults: [],
-      showFrom: false,
-      showTo: false,
-      chosenFromValue: "",
+      gasolinePrice: "",
+      consumption: "",
       chosenToValue: "",
+      chosenFromValue: "",
+      showTo: false,
+      showFrom: false,
       chosenFrom: null,
       chosenTo: null,
       distance: null,
-      gasolinePrice: "",
-      totalPrice: null,
-      consumption: ""
+      totalPrice: null
     };
   }
 
@@ -43,7 +46,8 @@ class Form extends Component {
     }));
   };
 
-  // second parameter is a callback function that is called after the state is updated
+  // NOTE:Second parameter is a callback function
+  // that is called after the state is updated
   addFrom = item => {
     this.setState(
       { chosenFrom: item, chosenFromValue: item.description },
@@ -55,7 +59,8 @@ class Form extends Component {
     );
   };
 
-  // second parameter is a callback function that is called after the state is updated
+  // NOTE: Second parameter is a callback function
+  // that is called after the state is updated
   addTo = item => {
     this.setState({ chosenTo: item, chosenToValue: item.description }, () => {
       if (this.state.chosenFrom) {
@@ -64,6 +69,7 @@ class Form extends Component {
     });
   };
 
+  // NOTE: The empty array here is the default parameter if we don't supply it
   updateDistance = ({ rows = [] }) => {
     if (rows.length) {
       this.setState({ distance: rows[0].elements[0].distance });
@@ -87,6 +93,7 @@ class Form extends Component {
         this.updateDistance // <-- this is the callback
       );
     } else {
+      // TODO: handle showing of error messages to the user
       console.log("error");
     }
   };
@@ -144,6 +151,10 @@ class Form extends Component {
 
         <Label>
           Mistä?
+
+          {/* NOTE: we are adding a small timeout to the blur handler to keep
+            * the onClick handler responsive to clicks
+            */}
           <Input
             name="chosenFromValue"
             value={chosenFromValue}
@@ -152,6 +163,7 @@ class Form extends Component {
             onBlur={() =>
               setTimeout(() => this.setState({ showFrom: false }), 100)}
           />
+
           {showFrom &&
             <Autocomplete>
               {searchResults.map(item => (
@@ -170,6 +182,10 @@ class Form extends Component {
 
         <Label>
           Mihin?
+
+          {/* NOTE: we are adding a small timeout to the blur handler to keep
+            * the onClick handler responsive to clicks
+            */}
           <Input
             name="chosenToValue"
             value={chosenToValue}
@@ -178,6 +194,7 @@ class Form extends Component {
             onBlur={() =>
               setTimeout(() => this.setState({ showTo: false }), 100)}
           />
+
           {showTo &&
             <Autocomplete>
               {searchResults.map(item => (
@@ -206,7 +223,9 @@ class Form extends Component {
                 this.setState({ gasolinePrice: sanitize(target.value) })}
             />
           </Label>
+
           <div style={{ paddingRight: 24 }} />
+
           <Label w="100%">
             Kulutus?
             <Input
@@ -243,6 +262,7 @@ class Form extends Component {
           SPLITTAA!
         </CalculateButton>
 
+        {/* TODO: use details view instead */}
         {totalPrice !== null &&
           <SplittedPrice>
             {Number(totalPrice / passengerCount).toFixed(3)}&nbsp;€
@@ -259,11 +279,11 @@ const FormWrapper = styled.form`
 `;
 
 const Label = styled.label`
-  font-family: ${props => props.theme.mainFontFamily};
   display: flex;
   flex-direction: column;
   margin-bottom: 24px;
   position: relative;
+  font-family: ${props => props.theme.mainFontFamily};
   ${props => props.w && `width: ${props.w}`};
 `;
 
@@ -299,6 +319,7 @@ const PassengerCountControl = styled.div`
 const IconButton = styled.i`
   font-size: 56px;
   color: ${props => props.theme.mainColor};
+
   &:active {
     color: black;
   }
@@ -317,16 +338,16 @@ const Distance = styled.div`
 `;
 
 const CalculateButton = styled.button`
-  font-family: ${props => props.theme.mainFontFamily};
   font-size: 28px;
   border-radius: 3px;
-  background-color: ${props => props.theme.mainColor};
   color: white;
   border: none;
   padding: 12px 16px;
   text-align: center;
   font-weight: 700;
   letter-spacing: 1.6px;
+  background-color: ${props => props.theme.mainColor};
+  font-family: ${props => props.theme.mainFontFamily};
 
   &:active {
     background-color: ${props => props.theme.mainColorDarker};

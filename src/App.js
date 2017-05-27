@@ -36,6 +36,9 @@ class App extends Component {
 
   appReady = () => {
     this.setState({ initDone: true });
+
+    // Delay the showing of the content a bit to allow the user
+    // to see the splash screen properly => feels more mobile app like
     setTimeout(() => this.setState({ splashVisible: false }), SPLASH_DELAY);
   };
 
@@ -61,11 +64,11 @@ class App extends Component {
 const Header = styled.div`
   height: 60px;
   width: 100%;
-  background-color: ${props => props.theme.mainColor};
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 16px;
+  background-color: ${props => props.theme.mainColor};
 `;
 
 const AppIcon = styled.i`
@@ -74,13 +77,13 @@ const AppIcon = styled.i`
   border-radius: 50%;
   background-color: white;
   font-size: 32px;
-  color: ${props => props.theme.mainColor};
   display: flex;
   align-items: center;
   justify-content: center;
   transition: transform 0.6s cubic-bezier(.03, .83, .76, .98);
   transform: translateY(0px);
-  z-index: 9999;
+  color: ${props => props.theme.mainColor};
+  z-index: ${props => props.theme.elevations.navbar};
   ${props => props.moveIcon && "transform: translateY(45vh) scale(2);"}
 `;
 
