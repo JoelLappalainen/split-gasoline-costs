@@ -81,7 +81,7 @@ const AppIcon = styled.i`
   transition: transform 0.6s cubic-bezier(.03, .83, .76, .98);
   transform: translateY(0px);
   z-index: 9999;
-  ${props => props.moveIcon && "transform: translateY(40vh) scale(3);"}
+  ${props => props.moveIcon && "transform: translateY(45vh) scale(2);"}
 `;
 
 export default App;
