@@ -1,0 +1,41 @@
+/* Results animations when component mounts / unmounts */
+
+.resultsLeave .results-panel {
+  transform: translateX(0%);
+  will-change: transform;
+  transition: transform 0.3s cubic-bezier(.07,.82,.64,.97);
+}
+
+.resultsLeave .results-backdrop {
+  opacity: 1;
+  will-change: opacity;
+  transition: opacity 0.3s cubic-bezier(.07,.82,.64,.97);
+}
+
+.resultsLeave.resultsLeaveActive .results-panel {
+  transform: translateY(110%);
+}
+
+.resultsLeave.resultsLeaveActive .results-backdrop {
+  opacity: 0;
+}
+
+.resultsEnter .results-panel {
+  transform: translateY(110%);
+  will-change: transform;
+  transition: transform 0.3s cubic-bezier(.07,.82,.64,.97);
+}
+
+.resultsEnter .results-backdrop {
+  opacity: 0.01;
+  will-change: opacity;
+  transition: opacity 0.3s cubic-bezier(.07,.82,.64,.97);
+}
+
+.resultsEnter.resultsEnterActive .results-panel {
+  transform: translateY(0%);
+}
+
+.resultsEnter.resultsEnterActive .results-backdrop {
+  opacity: 1;
+}

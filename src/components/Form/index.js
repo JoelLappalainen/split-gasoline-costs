@@ -1,12 +1,33 @@
 import React, { Component } from "react";
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 import debounce from "lodash.debounce";
+import Results from "../Results";
 
 // TODO: refactor this into more manageable pieces...
 
 // Sanitize number string so that parseFloat works properly
 // => decimal numbers have to use dot instead of comma
 const sanitize = num => num.replace(",", ".");
+
+const initialState = {
+  passengerCount: 2,
+  searchResults: [],
+  gasolinePrice: "",
+  consumption: "",
+  chosenToValue: "",
+  chosenFromValue: "",
+  showTo: false,
+  showFrom: false,
+  showResults: false,
+  chosenFrom: null,
+  chosenTo: null,
+  distance: null,
+  totalPrice: null,
+  errors: {
+    chosenFrom: false,
+    chosenTo: false
+  }
+};
 
 class Form extends Component {
   constructor(props) {
@@ -18,20 +39,7 @@ class Form extends Component {
     this.gDistance = new props.google.maps.DistanceMatrixService();
     this.gAutocomplete = new props.google.maps.places.AutocompleteService();
 
-    this.state = {
-      passengerCount: 2,
-      searchResults: [],
-      gasolinePrice: "",
-      consumption: "",
-      chosenToValue: "",
-      chosenFromValue: "",
-      showTo: false,
-      showFrom: false,
-      chosenFrom: null,
-      chosenTo: null,
-      distance: null,
-      totalPrice: null
-    };
+    this.state = initialState;
   }
 
   addPassenger = () => {
@@ -109,7 +117,11 @@ class Form extends Component {
     const consumptionNum = parseFloat(consumption);
     const gasPriceNum = parseFloat(gasolinePrice);
     const totalPrice = distance.value / 100000 * consumptionNum * gasPriceNum;
-    this.setState({ totalPrice });
+    this.setState({ totalPrice, showResults: true });
+  };
+
+  hideResults = () => {
+    this.setState({ showResults: false });
   };
 
   updateSearchResults = predictions => {
@@ -118,16 +130,40 @@ class Form extends Component {
     }
   };
 
+  // eg. "showFrom", "chosenFrom"
+  handleInputBlur = (autocompleteOpen, predicate) => {
+    setTimeout(() => {
+      this.setState({ [autocompleteOpen]: false }, () => {
+        if (!this.state[predicate]) {
+          this.setState(prevState => ({
+            errors: { ...prevState.errors, [predicate]: true }
+          }));
+        } else {
+          this.setState(prevState => ({
+            errors: { ...prevState.errors, [predicate]: false }
+          }));
+        }
+      });
+    }, 100);
+  };
+
+  resetForm = e => {
+    e.preventDefault();
+    this.setState({ ...initialState });
+  };
+
   searchPlacesDebounced = debounce(word => {
-    // Get address predictions from api
-    this.gAutocomplete.getPlacePredictions(
-      {
-        input: word,
-        types: ["geocode"],
-        componentRestrictions: { country: "fi" }
-      },
-      this.updateSearchResults // <-- this is the callback
-    );
+    if (word) {
+      // Get address predictions from api
+      this.gAutocomplete.getPlacePredictions(
+        {
+          input: word,
+          types: ["geocode", "establishment"],
+          componentRestrictions: { country: "fi" }
+        },
+        this.updateSearchResults // <-- this is the callback
+      );
+    }
   }, 400);
 
   render() {
@@ -141,10 +177,16 @@ class Form extends Component {
       chosenFromValue,
       gasolinePrice,
       totalPrice,
-      consumption
+      consumption,
+      errors,
+      showResults,
+      chosenTo,
+      chosenFrom
     } = this.state;
 
     console.log("state", this.state);
+
+    const isValid = chosenFrom && chosenTo && gasolinePrice && consumption;
 
     return (
       <FormWrapper autoComplete="off">
@@ -160,8 +202,8 @@ class Form extends Component {
             value={chosenFromValue}
             onChange={this.handleChange}
             onFocus={() => this.setState({ showFrom: true })}
-            onBlur={() =>
-              setTimeout(() => this.setState({ showFrom: false }), 100)}
+            onBlur={() => this.handleInputBlur("showFrom", "chosenFrom")}
+            error={errors.chosenFrom}
           />
 
           {showFrom &&
@@ -191,8 +233,8 @@ class Form extends Component {
             value={chosenToValue}
             onChange={this.handleChange}
             onFocus={() => this.setState({ showTo: true })}
-            onBlur={() =>
-              setTimeout(() => this.setState({ showTo: false }), 100)}
+            onBlur={() => this.handleInputBlur("showTo", "chosenTo")}
+            error={errors.chosenTo}
           />
 
           {showTo &&
@@ -258,15 +300,21 @@ class Form extends Component {
           />
         </PassengerCountControl>
 
-        <CalculateButton type="button" onClick={this.calculateTotalPrice}>
+        <CalculateButton
+          type="button"
+          disabled={!isValid}
+          onClick={this.calculateTotalPrice}
+        >
           SPLITTAA!
         </CalculateButton>
 
-        {/* TODO: use details view instead */}
-        {totalPrice !== null &&
-          <SplittedPrice>
-            {Number(totalPrice / passengerCount).toFixed(3)}&nbsp;€
-          </SplittedPrice>}
+        <Results
+          visible={showResults}
+          totalPrice={totalPrice}
+          passengerCount={passengerCount}
+          handleHide={this.hideResults}
+          handleReset={this.resetForm}
+        />
       </FormWrapper>
     );
   }
@@ -296,6 +344,8 @@ const Input = styled.input`
   padding: 16px;
   color: ${props => props.theme.mainColor};
   ${props => props.w && `width: ${props.w}`};
+  ${props => props.error && `border-color: ${props.theme.errorColor}`};
+  ${props => props.error && `background-color: ${props.theme.errorColorLight}`};
 
   &:focus {
     outline: none;
@@ -348,6 +398,13 @@ const CalculateButton = styled.button`
   letter-spacing: 1.6px;
   background-color: ${props => props.theme.mainColor};
   font-family: ${props => props.theme.mainFontFamily};
+  ${props => props.disabled && css`
+    opacity: 0.4;
+    background-color: #eee;
+    color: #ccc;
+    pointer-events: none;
+    cursor: not-allowed;
+  `};
 
   &:active {
     background-color: ${props => props.theme.mainColorDarker};
@@ -373,6 +430,7 @@ const Autocomplete = styled.ul`
 const Item = styled.li`
   padding: 8px;
   border-bottom: 1px solid #eee;
+  font-size: 14px;
 `;
 
 const SplittedPrice = styled.div`
