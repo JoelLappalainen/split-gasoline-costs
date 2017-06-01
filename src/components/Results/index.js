@@ -89,7 +89,7 @@ const ResultPanel = styled.div`
   display: flex;
   flex-direction: column;
   padding: 16px;
-  height: 82vh;
+  height: 85vh;
   background-color: #fff;
   box-shadow: 0px 0px 18px rgba(0,0,0,0.7);
   text-align: center;
@@ -109,30 +109,30 @@ const Heading = styled.h2`
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: ${props => (props.sub ? "18px" : "28px")};
+  font-size: ${props => (props.sub ? "18px" : "26px")};
   font-weight: ${props => (props.sub ? 100 : 700)};
   margin: 0 0 16px 0;
   color: ${props => props.theme.mainColor};
 
   & > i {
     margin-right: 12px;
-    font-size: ${props => (props.sub ? "22px" : "32px")};
+    font-size: ${props => (props.sub ? "22px" : "30px")};
     color: ${props => props.theme.mainColor};
   }
 `;
 const Price = styled.div`
-  padding: 10px 14px;
+  padding: 8px 12px;
   border-radius: 22px;
   background-color: #f5f5f5;
   border: 1px solid #eee;
   display: inline-block;
   font-weight: 700;
   color: #666;
-  font-size: ${props => (props.small ? "18px" : "26px")};
+  font-size: ${props => (props.small ? "18px" : "24px")};
 `;
 const ResetButton = styled.button`
   margin: 8px auto;
-  font-size: 24px;
+  font-size: 20px;
   border-radius: 3px;
   color: white;
   border: none;
